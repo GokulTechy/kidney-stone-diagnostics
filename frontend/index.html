@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kidney Stone Detection System - Clinical AI</title>
+    <!-- Google Fonts for premium clinical typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Syncopate:wght@400;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Dashboard Header -->
+        <header class="app-header">
+            <div class="header-left">
+                <div class="logo-container">
+                    <div class="pulse-ring"></div>
+                    <svg class="logo-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H7c0-2.76 2.24-5 5-5s5 2.24 5 5c0 1.04-.42 1.99-1.07 2.75z" fill="currentColor"/>
+                    </svg>
+                </div>
+                <div class="title-container">
+                    <h1>Kidney Stone Diagnostics <span class="badge badge-primary">Clinical AI v1.2</span></h1>
+                    <p class="subtitle">AI-powered medical decision support for automated ultrasound & CT scan screening</p>
+                </div>
+            </div>
+            
+            <div class="header-right">
+                <div class="system-meta-item">
+                    <span class="meta-label">SCAN ID:</span>
+                    <span class="meta-value id-glow" id="currentScanId">KSD-2026-48902</span>
+                </div>
+                <div class="system-meta-item">
+                    <span class="meta-label">LIVE FEED:</span>
+                    <span class="meta-value" id="currentTime">11:05:19 AM</span>
+                </div>
+                <div class="connection-status badge badge-simulation" id="apiStatusBadge">
+                    <span class="status-dot"></span>
+                    <span class="status-text">Simulation Mode</span>
+                </div>
+                <button class="settings-btn" id="openSettingsBtn" title="API Settings">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="settings-icon">
+                        <circle cx="12" cy="12" r="3"></circle>
+                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                    </svg>
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Dashboard Split Screen -->
+        <main class="dashboard-body">
+            
+            <!-- LEFT PANEL: INPUT, UPLOAD & SYMPTOMS -->
+            <aside class="panel-left">
+                
+                <!-- Section 1: Scan Mode Selection -->
+                <div class="card card-tabs">
+                    <div class="tabs-header">
+                        <button class="tab-btn active" id="tabUltrasound" data-tab="ultrasound">
+                            <svg viewBox="0 0 24 24" class="tab-icon" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"></path>
+                                <circle cx="12" cy="12" r="4"></circle>
+                            </svg>
+                            <span>Ultrasound scan</span>
+                        </button>
+                        <button class="tab-btn" id="tabCT" data-tab="ct">
+                            <svg viewBox="0 0 24 24" class="tab-icon" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                <line x1="9" y1="3" x2="9" y2="21"></line>
+                                <line x1="15" y1="3" x2="15" y2="21"></line>
+                                <line x1="3" y1="9" x2="21" y2="9"></line>
+                                <line x1="3" y1="15" x2="21" y2="15"></line>
+                            </svg>
+                            <span>CT scan (YOLO)</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Section 2: File Upload Zone -->
+                <div class="card card-upload">
+                    <div class="card-header-small">
+                        <h3>SCAN SOURCE INPUT</h3>
+                    </div>
+                    <div class="upload-dropzone" id="dropzone">
+                        <input type="file" id="scanFileInput" accept="image/png, image/jpeg, image/jpg" style="display: none;">
+                        <div class="dropzone-content">
+                            <div class="upload-icon-wrapper">
+                                <svg class="upload-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="16 16 12 12 8 16"></polyline>
+                                    <line x1="12" y1="12" x2="12" y2="21"></line>
+                                    <path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"></path>
+                                </svg>
+                            </div>
+                            <h4>Click to upload or drag & drop</h4>
+                            <p class="upload-hint" id="uploadHintText">Upload ultrasound kidney image to begin AI stone detection.</p>
+                            <span class="file-limits">Supported formats: JPG, JPEG, PNG</span>
+                        </div>
+                        <div class="preview-overlay" id="previewOverlay">
+                            <img id="imagePreview" alt="Scan Preview">
+                            <button type="button" class="remove-file-btn" id="removeFileBtn" title="Remove image">&times;</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 3: CT Size Calibration Parameter (Dynamic rendering) -->
+                <div class="card card-calibration hidden" id="calibrationCard">
+                    <div class="card-header-small">
+                        <h3>SIZE CALIBRATION METADATA</h3>
+                    </div>
+                    <div class="input-group">
+                        <div class="label-with-info">
+                            <label for="mmPerPixel">Enter mm-per-pixel ratio:</label>
+                            <span class="info-tooltip" title="Ratio of millimeters per pixel coordinate width in CT scan space to compute exact size.">i</span>
+                        </div>
+                        <div class="number-input-wrapper">
+                            <input type="number" id="mmPerPixel" min="0.01" max="10.00" step="0.01" value="0.10">
+                            <span class="unit-badge">mm/px</span>
+                        </div>
+                    </div>
+                    <p class="calibration-desc">Formula: Stone Diameter (mm) = Max detected YOLO bounding box dimension (px) &times; mm-per-pixel.</p>
+                </div>
+
+                <!-- Section 4: Patient Symptoms Panel -->
+                <div class="card card-symptoms">
+                    <div class="card-header-small">
+                        <h3>PATIENT SYMPTOMS & CLINICAL METRIC</h3>
+                    </div>
+                    
+                    <!-- Symptom: Age & Pain slider -->
+                    <div class="form-row">
+                        <div class="input-col col-6">
+                            <label for="patientAge">Patient Age:</label>
+                            <input type="number" id="patientAge" min="1" max="120" value="25">
+                        </div>
+                        <div class="input-col col-6">
+                            <label for="painLevel">Pain Severity Level:</label>
+                            <div class="pain-badge-container">
+                                <span class="pain-badge" id="painBadge">5 - Moderate</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="slider-wrapper">
+                        <input type="range" id="painLevel" min="0" max="10" value="5" class="pain-slider">
+                        <div class="slider-ticks">
+                            <span>0</span>
+                            <span>2</span>
+                            <span>4</span>
+                            <span>6</span>
+                            <span>8</span>
+                            <span>10</span>
+                        </div>
+                    </div>
+
+                    <!-- Toggle cards for other clinical markers -->
+                    <label class="section-sublabel">Clinical Indicators:</label>
+                    <div class="clinical-grid">
+                        
+                        <label class="clinical-toggle-card">
+                            <input type="checkbox" id="feverToggle">
+                            <div class="toggle-card-content">
+                                <div class="icon-indicator hot-temp"></div>
+                                <span class="toggle-title">Fever</span>
+                                <span class="toggle-desc">Signs of Infection</span>
+                            </div>
+                        </label>
+
+                        <label class="clinical-toggle-card">
+                            <input type="checkbox" id="vomitingToggle">
+                            <div class="toggle-card-content">
+                                <div class="icon-indicator vomiting"></div>
+                                <span class="toggle-title">Vomiting</span>
+                                <span class="toggle-desc">Nausea / Emesis</span>
+                            </div>
+                        </label>
+
+                        <label class="clinical-toggle-card">
+                            <input type="checkbox" id="bloodUrineToggle">
+                            <div class="toggle-card-content">
+                                <div class="icon-indicator blood-urine"></div>
+                                <span class="toggle-title">Hematuria</span>
+                                <span class="toggle-desc">Blood in Urine</span>
+                            </div>
+                        </label>
+
+                        <label class="clinical-toggle-card">
+                            <input type="checkbox" id="historyToggle">
+                            <div class="toggle-card-content">
+                                <div class="icon-indicator history-recur"></div>
+                                <span class="toggle-title">Recurrent</span>
+                                <span class="toggle-desc">Previous History</span>
+                            </div>
+                        </label>
+                        
+                    </div>
+                </div>
+
+                <!-- Submit Button -->
+                <button class="btn btn-action" id="analyzeBtn" disabled>
+                    <span class="btn-text">Run Neural Diagnostics</span>
+                    <span class="spinner hidden" id="btnSpinner"></span>
+                </button>
+
+                <!-- Processing Console Logs -->
+                <div class="console-card hidden" id="consoleLogsCard">
+                    <div class="console-header">
+                        <span class="console-title">Neural Network Logs</span>
+                        <span class="console-dot blink"></span>
+                    </div>
+                    <div class="console-body" id="consoleLogs">
+                        <!-- Filled dynamically -->
+                    </div>
+                </div>
+
+            </aside>
+            
+            <!-- RIGHT PANEL: MEDICAL DIAGNOSTIC DISPLAY -->
+            <section class="panel-right">
+                
+                <!-- Large Canvas Scan Display -->
+                <div class="card card-visualizer">
+                    <div class="visualizer-header">
+                        <div class="visualizer-badge">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="v-icon">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <polyline points="12 6 12 12 16 14"></polyline>
+                            </svg>
+                            <span id="visualizerModeLabel">Ultrasound Imaging Console</span>
+                        </div>
+                        <span class="scale-indicator" id="scaleIndicator">Scale: Auto</span>
+                    </div>
+                    
+                    <div class="canvas-viewport">
+                        <div class="no-scan-message" id="noScanMsg">
+                            <svg class="placeholder-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                                <polyline points="21 15 16 10 5 21"></polyline>
+                            </svg>
+                            <p>No Active Scan Selected</p>
+                            <span class="subtext">Upload an image on the left and run analysis to render ultrasound/CT clinical bounding boxes.</span>
+                        </div>
+                        <div class="canvas-container hidden" id="canvasContainer">
+                            <canvas id="scanCanvas"></canvas>
+                            <div class="laser-scanner hidden" id="laserScanner"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Diagnostic Reports & Cards Grid -->
+                <div class="report-grid">
+                    
+                    <!-- AI Prediction Diagnosis -->
+                    <div class="card report-card card-diagnosis gray-out" id="diagnosisCard">
+                        <div class="card-header-small">
+                            <h3>NEURAL MODEL OUTCOME</h3>
+                        </div>
+                        <div class="report-value-area">
+                            <div class="result-icon-placeholder" id="diagIcon">
+                                <svg viewBox="0 0 24 24" class="report-svg" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <line x1="12" y1="8" x2="12" y2="12"></line>
+                                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                                </svg>
+                            </div>
+                            <div class="result-details">
+                                <span class="result-status-title" id="diagResult">Awaiting Analysis</span>
+                                <span class="result-subtext" id="diagModelInfo">Support Model: TensorFlow v2.15</span>
+                            </div>
+                        </div>
+                        <div class="confidence-meter-wrapper">
+                            <div class="conf-text-row">
+                                <span>Detection Confidence</span>
+                                <strong id="diagConfidence">0.00%</strong>
+                            </div>
+                            <div class="progress-track">
+                                <div class="progress-fill" id="diagConfidenceFill" style="width: 0%;"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Risk Assessment dial -->
+                    <div class="card report-card card-risk gray-out" id="riskCard">
+                        <div class="card-header-small">
+                            <h3>CLINICAL RISK FACTOR</h3>
+                        </div>
+                        <div class="risk-gauge-container">
+                            <div class="risk-gauge">
+                                <div class="gauge-arc"></div>
+                                <div class="gauge-needle" id="riskNeedle" style="transform: rotate(-90deg);"></div>
+                                <div class="gauge-center">
+                                    <span class="gauge-value" id="riskLevelText">Awaiting</span>
+                                    <span class="gauge-label">RISK LEVEL</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="risk-legend">
+                            <span class="legend-item risk-low"><span class="legend-color"></span>Low</span>
+                            <span class="legend-item risk-moderate"><span class="legend-color"></span>Moderate</span>
+                            <span class="legend-item risk-high"><span class="legend-color"></span>High</span>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- CT Stones Detected Bounding Box Table (CT Scan only) -->
+                <div class="card report-card card-table hidden" id="stoneDetectionsCard">
+                    <div class="card-header-small">
+                        <h3>YOLO ESTIMATED STONE SIZES</h3>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="detections-table">
+                            <thead>
+                                <tr>
+                                    <th>Stones Index</th>
+                                    <th>Model Confidence</th>
+                                    <th>Bounding Box px</th>
+                                    <th>Estimated Size</th>
+                                </tr>
+                            </thead>
+                            <tbody id="detectionsTableBody">
+                                <tr>
+                                    <td colspan="4" class="empty-table-msg">No stones detected. Run AI CT sizing scan.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Detailed Diagnostic Summary / Reasons -->
+                <div class="card report-card card-reasons gray-out" id="reasonsCard">
+                    <div class="card-header-small">
+                        <h3>CLINICAL METRIC ANALYSIS SUMMARY</h3>
+                    </div>
+                    <ul class="clinical-reasons-list" id="reasonsList">
+                        <li class="reason-placeholder">Please upload a scan and hit diagnostic execution to view medical explanation factors.</li>
+                    </ul>
+                </div>
+
+                <!-- Disclaimer Footer -->
+                <footer class="clinical-footer">
+                    <p class="warning-text">
+                        <strong>🚨 CRITICAL MEDICAL DISCLAIMER:</strong> This Kidney Stone Diagnostics tool uses deep neural network computer vision models for clinical academic evaluation. It is not an FDA-approved diagnostic system. Results must be verified by a licensed radiologist or clinical physician.
+                    </p>
+                    <button class="btn btn-secondary" id="exportReportBtn" disabled>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="export-icon">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="7 10 12 15 17 10"></polyline>
+                            <line x1="12" y1="15" x2="12" y2="3"></line>
+                        </svg>
+                        <span>Export Medical PDF Report</span>
+                    </button>
+                </footer>
+
+            </section>
+
+        </main>
+    </div>
+
+    <!-- SETTINGS MODAL (Backend configuration) -->
+    <div class="modal-backdrop" id="settingsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>API Core Configurations</h2>
+                <button class="close-modal-btn" id="closeSettingsBtn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="modal-toggle-label">
+                        <input type="checkbox" id="simulationModeToggle" checked>
+                        <div class="modal-toggle-slider-wrapper">
+                            <span class="modal-toggle-label-text">Enable Simulation Mode</span>
+                            <div class="modal-toggle-switch"></div>
+                        </div>
+                    </label>
+                    <p class="form-help-text">When checked, the system runs local client-side diagnostics using static simulations. Recommended for Netlify demo hosting environments without a Python server.</p>
+                </div>
+                
+                <div class="form-group" id="apiUrlInputGroup" style="opacity: 0.5; pointer-events: none;">
+                    <label for="backendApiUrl">Backend API Server Endpoint:</label>
+                    <input type="url" id="backendApiUrl" value="http://localhost:8000" placeholder="e.g. http://localhost:8000">
+                    <p class="form-help-text">Input URL endpoint pointing to your active deployed FastAPI backend. Make sure CORS is configured properly on the server.</p>
+                </div>
+
+                <div class="connection-tester-wrapper hidden" id="connectionTester">
+                    <div class="test-status" id="connectionTestStatus">Checking server connectivity...</div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="testConnectionBtn" disabled>Test Endpoint Connection</button>
+                <button class="btn btn-primary" id="saveSettingsBtn">Save Configuration</button>
+            </div>
+        </div>
+    </div>
+    <script src="app.js"></script>
+</body>
+</html>

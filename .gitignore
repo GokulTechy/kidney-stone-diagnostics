@@ -1,0 +1,28 @@
+# Python virtual environments
+venv/
+.venv/
+env/
+ENV/
+
+# Python caches
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Large datasets & raw files
+dataset/
+yolo_dataset/
+raw_dataset/
+
+# Training runs & temp model checkpoints
+runs/
+training/
+yolov8n.pt
+
+# IDE / System configurations
+.gemini/
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
