@@ -1,16 +1,51 @@
 import streamlit as st
 from PIL import Image
+import numpy as np
 from predict import predict_kidney_stone
 from risk import calculate_risk
 from ct_yolo_size import detect_ct_stone_size
 
+
+def is_medical_scan(pil_image: Image.Image) -> tuple[bool, str]:
+    """
+    Validates whether the uploaded image is a valid medical scan (ultrasound/CT).
+    """
+    try:
+        # Convert to RGB to ensure 3 channels
+        img_rgb = pil_image.convert("RGB")
+        img_array = np.array(img_rgb)
+        
+        # Calculate mean brightness across all pixels
+        mean_brightness = np.mean(img_array)
+        
+        # Calculate deviation from grayscale (standard deviation of R, G, B channels per pixel)
+        channel_std = np.std(img_array, axis=2)
+        mean_color_diff = np.mean(channel_std)
+        
+        # 1. Page screenshots or documents have very high brightness (white background)
+        if mean_brightness > 165.0:
+            return False, "High average brightness detected (e.g. document, screenshot, or white page). Please upload only a valid ultrasound or CT scan image with a dark background."
+            
+        # 2. General photos (like faces, animals, colorful pictures) have high color diversity
+        if mean_color_diff > 25.0:
+            return False, "High color saturation or color variety detected. Please upload only a valid ultrasound or CT scan image (typically grayscale/dark)."
+            
+        # 3. Completely plain/empty/black image
+        if mean_brightness < 2.0:
+            return False, "Image appears to be completely blank or black. Please upload a valid scan image."
+            
+        return True, ""
+    except Exception as e:
+        return True, ""
+
+
 st.set_page_config(
-    page_title="Kidney Stone Detection System",
+    page_title="LithoScan AI - Kidney Stone Detection & Analysis",
     page_icon="🩺",
     layout="centered"
 )
 
-st.title("AI-Based Kidney Stone Detection and Size Estimation")
+st.title("LithoScan AI: Enhancing Kidney Stone Diagnosis with AI-Driven Medical Imaging")
 
 tab1, tab2 = st.tabs([
     "Ultrasound Stone Detection",
@@ -67,6 +102,10 @@ with tab1:
             caption="Uploaded Ultrasound Image",
             use_container_width=True
         )
+
+        is_valid, warning_msg = is_medical_scan(image)
+        if not is_valid:
+            st.warning(f"⚠️ Warning: {warning_msg}")
 
         if st.button("Analyze Ultrasound Image"):
             result, confidence = predict_kidney_stone(image)
@@ -158,6 +197,10 @@ with tab2:
             caption="Uploaded CT Scan Image",
             use_container_width=True
         )
+
+        is_valid, warning_msg = is_medical_scan(ct_image)
+        if not is_valid:
+            st.warning(f"⚠️ Warning: {warning_msg}")
 
         if st.button("Detect Stone Size from CT"):
             output_image, detections = detect_ct_stone_size(

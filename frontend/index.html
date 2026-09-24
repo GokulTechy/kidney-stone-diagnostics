@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kidney Stone Detection System - Clinical AI</title>
+    <title>LithoScan AI - Kidney Stone Detection & Analysis</title>
     <!-- Google Fonts for premium clinical typography -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -22,8 +22,8 @@
                     </svg>
                 </div>
                 <div class="title-container">
-                    <h1>Kidney Stone Diagnostics <span class="badge badge-primary">Clinical AI v1.2</span></h1>
-                    <p class="subtitle">AI-powered medical decision support for automated ultrasound & CT scan screening</p>
+                    <h1>LithoScan AI <span class="badge badge-primary">Clinical AI v1.2</span></h1>
+                    <p class="subtitle">Enhancing kidney stone diagnosis with AI-driven medical imaging</p>
                 </div>
             </div>
             
@@ -40,6 +40,24 @@
                     <span class="status-dot"></span>
                     <span class="status-text">Simulation Mode</span>
                 </div>
+                <button class="theme-toggle-btn" id="themeToggleBtn" title="Toggle Theme">
+                    <!-- Moon Icon (shown in light mode) -->
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="theme-icon moon-icon">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <!-- Sun Icon (hidden in light mode, shown in dark mode) -->
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="theme-icon sun-icon hidden">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
                 <button class="settings-btn" id="openSettingsBtn" title="API Settings">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="settings-icon">
                         <circle cx="12" cy="12" r="3"></circle>
@@ -101,6 +119,14 @@
                             <img id="imagePreview" alt="Scan Preview">
                             <button type="button" class="remove-file-btn" id="removeFileBtn" title="Remove image">&times;</button>
                         </div>
+                    </div>
+                    <div id="imageWarningBanner" class="warning-banner hidden">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="warning-banner-icon">
+                            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                            <line x1="12" y1="9" x2="12" y2="13"></line>
+                            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                        </svg>
+                        <span class="warning-banner-text" id="warningBannerText">Warning: Non-medical image detected. Please upload only valid ultrasound or CT scan images.</span>
                     </div>
                 </div>
 
@@ -342,7 +368,7 @@
                 <!-- Disclaimer Footer -->
                 <footer class="clinical-footer">
                     <p class="warning-text">
-                        <strong>🚨 CRITICAL MEDICAL DISCLAIMER:</strong> This Kidney Stone Diagnostics tool uses deep neural network computer vision models for clinical academic evaluation. It is not an FDA-approved diagnostic system. Results must be verified by a licensed radiologist or clinical physician.
+                        <strong>🚨 CRITICAL MEDICAL DISCLAIMER:</strong> This LithoScan AI tool uses deep neural network computer vision models for clinical academic evaluation. It is not an FDA-approved diagnostic system. Results must be verified by a licensed radiologist or clinical physician.
                     </p>
                     <button class="btn btn-secondary" id="exportReportBtn" disabled>
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="export-icon">

@@ -3,6 +3,50 @@
    ========================================================================== */
 
 :root {
+    /* Clinical light slate & hospital white palette */
+    --bg-primary: #f8fafc;
+    --bg-secondary: #ffffff;
+    --bg-tertiary: #f1f5f9;
+    --border-color: #e2e8f0;
+    --border-color-glow: rgba(37, 99, 235, 0.08);
+    
+    /* Medical device customized accents - optimized for high-contrast readability in light theme */
+    --accent-cyan: #0d9488;      /* Clinical teal */
+    --accent-blue: #2563eb;      /* Clean hospital cobalt */
+    --accent-purple: #6d28d9;    /* Deep telemetry lavender */
+    
+    /* Strict clinical status colors */
+    --status-success: #05a76c;   /* Curated Mint Emerald */
+    --status-warning: #d97706;   /* Burnished Gold */
+    --status-danger: #e11d48;    /* Strict Medical Crimson */
+    --status-info: #0284c7;      /* Deep Sea Cyan */
+
+    /* Text Colors for Light Theme */
+    --text-primary: #0f172a;
+    --text-secondary: #475569;
+    --text-muted: #64748b;
+    --text-inverse: #ffffff;
+    --text-sub: #475569;
+    
+    /* Input overrides */
+    --bg-input: #ffffff;
+    --text-input: #0f172a;
+    
+    /* Custom font tokens */
+    --font-heading: 'Syncopate', -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-ui: 'Plus Jakarta Sans', -apple-system, sans-serif;
+    --font-mono: 'Space Mono', monospace;
+    
+    /* Elevation & Curves */
+    --radius-lg: 12px;
+    --radius-md: 8px;
+    --radius-sm: 4px;
+    --shadow-obsidian: 0 10px 30px rgba(15, 23, 42, 0.04);
+    --shadow-telemetry: 0 0 15px rgba(37, 99, 235, 0.05);
+    --transition-telemetry: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+:root.dark-theme {
     /* High-contrast obsidian & clinical obsidian palette */
     --bg-primary: #060810;
     --bg-secondary: #0d1220;
@@ -20,19 +64,21 @@
     --status-warning: #e09700;   /* Burnished Gold */
     --status-danger: #e11d48;    /* Strict Medical Crimson */
     --status-info: #00b4d8;      /* Deep Sea Cyan */
+
+    /* Text Colors for Dark Theme */
+    --text-primary: #e2e8f0;
+    --text-secondary: #94a3b8;
+    --text-muted: #64748b;
+    --text-inverse: #ffffff;
+    --text-sub: #94a3b8;
     
-    /* Custom font tokens */
-    --font-heading: 'Syncopate', -apple-system, BlinkMacSystemFont, sans-serif;
-    --font-ui: 'Plus Jakarta Sans', -apple-system, sans-serif;
-    --font-mono: 'Space Mono', monospace;
+    /* Input overrides */
+    --bg-input: #060810;
+    --text-input: #f8fafc;
     
     /* Elevation & Curves */
-    --radius-lg: 12px;
-    --radius-md: 8px;
-    --radius-sm: 4px;
     --shadow-obsidian: 0 10px 30px rgba(0, 0, 0, 0.6);
     --shadow-telemetry: 0 0 15px rgba(0, 210, 196, 0.1);
-    --transition-telemetry: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 /* Base resets & layout styling */
@@ -47,9 +93,9 @@
 body {
     background-color: var(--bg-primary);
     background-image: 
-        radial-gradient(circle at 5% 5%, rgba(0, 210, 196, 0.03) 0%, transparent 40%),
-        radial-gradient(circle at 95% 95%, rgba(121, 82, 255, 0.03) 0%, transparent 45%);
-    color: #e2e8f0;
+        radial-gradient(circle at 5% 5%, rgba(59, 113, 247, 0.02) 0%, transparent 40%),
+        radial-gradient(circle at 95% 95%, rgba(121, 82, 255, 0.02) 0%, transparent 45%);
+    color: var(--text-primary);
     font-family: var(--font-ui);
     -webkit-font-smoothing: antialiased;
     min-height: 100vh;
@@ -229,6 +275,36 @@ body {
 
 .settings-btn:hover .settings-icon {
     transform: rotate(90deg);
+}
+
+.theme-toggle-btn {
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    width: 34px;
+    height: 34px;
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: var(--transition-telemetry);
+}
+
+.theme-toggle-btn:hover {
+    color: var(--accent-cyan);
+    border-color: var(--accent-cyan);
+    box-shadow: var(--shadow-telemetry);
+}
+
+.theme-icon {
+    width: 16px;
+    height: 16px;
+    transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.theme-toggle-btn:hover .theme-icon {
+    transform: rotate(20deg) scale(1.1);
 }
 
 /* ==========================================================================
@@ -483,10 +559,10 @@ body {
 
 .number-input-wrapper input {
     width: 100%;
-    background: var(--bg-primary);
+    background: var(--bg-input);
     border: 1px solid var(--border-color);
     padding: 0.55rem 2.5rem 0.55rem 0.75rem;
-    color: #f8fafc;
+    color: var(--text-input);
     border-radius: var(--radius-sm);
     font-family: var(--font-mono);
     font-weight: 700;
@@ -548,11 +624,11 @@ body {
 }
 
 .input-col input[type="number"] {
-    background: var(--bg-primary);
+    background: var(--bg-input);
     border: 1px solid var(--border-color);
     border-radius: var(--radius-sm);
     padding: 0.45rem 0.65rem;
-    color: #f8fafc;
+    color: var(--text-input);
     font-family: var(--font-mono);
     font-weight: 700;
     font-size: 0.8rem;
@@ -1107,7 +1183,7 @@ body {
 .gauge-needle {
     width: 4px;
     height: 48px;
-    background: #ffffff;
+    background: var(--text-primary);
     position: absolute;
     bottom: 0;
     left: calc(50% - 2px);
@@ -1389,7 +1465,7 @@ body {
 }
 
 .close-modal-btn:hover {
-    color: #ffffff;
+    color: var(--text-primary);
 }
 
 .modal-body {
@@ -1412,10 +1488,10 @@ body {
 }
 
 .form-group input[type="url"] {
-    background: var(--bg-primary);
+    background: var(--bg-input);
     border: 1px solid var(--border-color);
     padding: 0.55rem 0.75rem;
-    color: #ffffff;
+    color: var(--text-input);
     border-radius: var(--radius-md);
     outline: none;
     font-family: var(--font-mono);
@@ -1484,7 +1560,7 @@ body {
     display: flex;
     justify-content: flex-end;
     gap: 0.65rem;
-    background: rgba(13, 18, 32, 0.4);
+    background: var(--bg-tertiary);
 }
 
 .modal-footer .btn {
@@ -1591,5 +1667,33 @@ body {
 
 @keyframes telemetry-heart-pulse {
     0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.05); }
+    50% { transform: scale(1.02); }
+}
+
+/* Custom Warning Banner for non-scan images */
+.warning-banner {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: rgba(225, 29, 72, 0.08);
+    border: 1px solid rgba(225, 29, 72, 0.25);
+    color: var(--status-danger);
+    padding: 0.75rem 1rem;
+    border-radius: var(--radius-md);
+    margin-top: 0.85rem;
+    font-size: 0.74rem;
+    line-height: 1.4;
+    transition: var(--transition-telemetry);
+    animation: telemetry-heart-pulse 2s infinite ease-in-out;
+}
+
+.warning-banner-icon {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+}
+
+.warning-banner-text {
+    font-family: var(--font-ui);
+    font-weight: 500;
 }

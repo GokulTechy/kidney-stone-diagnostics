@@ -46,6 +46,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const removeFileBtn = document.getElementById("removeFileBtn");
     const calibrationCard = document.getElementById("calibrationCard");
     const mmPerPixelInput = document.getElementById("mmPerPixel");
+    const imageWarningBanner = document.getElementById("imageWarningBanner");
+    const warningBannerText = document.getElementById("warningBannerText");
     
     // Patient symptoms
     const patientAgeInput = document.getElementById("patientAge");
@@ -103,6 +105,11 @@ document.addEventListener("DOMContentLoaded", () => {
     const testConnectionBtn = document.getElementById("testConnectionBtn");
     const saveSettingsBtn = document.getElementById("saveSettingsBtn");
 
+    // Theme toggle elements
+    const themeToggleBtn = document.getElementById("themeToggleBtn");
+    const moonIcon = themeToggleBtn.querySelector(".moon-icon");
+    const sunIcon = themeToggleBtn.querySelector(".sun-icon");
+
     // ==========================================================================
     // INITIALIZATION & TIMERS
     // ==========================================================================
@@ -111,7 +118,28 @@ document.addEventListener("DOMContentLoaded", () => {
         updateTime();
         setInterval(updateTime, 1000);
         loadLocalSettings();
+        themeSetup();
         updateUIState(null);
+    }
+
+    // Theme Switcher core setup
+    function themeSetup() {
+        const storedTheme = localStorage.getItem("ksd_theme") || "light";
+        setTheme(storedTheme);
+    }
+
+    function setTheme(theme) {
+        if (theme === "dark") {
+            document.documentElement.classList.add("dark-theme");
+            moonIcon.classList.add("hidden");
+            sunIcon.classList.remove("hidden");
+            localStorage.setItem("ksd_theme", "dark");
+        } else {
+            document.documentElement.classList.remove("dark-theme");
+            moonIcon.classList.remove("hidden");
+            sunIcon.classList.add("hidden");
+            localStorage.setItem("ksd_theme", "light");
+        }
     }
 
     // Dynamic Clock
@@ -271,6 +299,17 @@ document.addEventListener("DOMContentLoaded", () => {
             uploadedImageElement.onload = () => {
                 drawOriginalImage();
                 analyzeBtn.disabled = false;
+                
+                // Client-side image validation
+                const validation = checkIsMedicalScan(uploadedImageElement);
+                if (imageWarningBanner && warningBannerText) {
+                    if (!validation.isValid) {
+                        imageWarningBanner.classList.remove("hidden");
+                        warningBannerText.textContent = validation.reason;
+                    } else {
+                        imageWarningBanner.classList.add("hidden");
+                    }
+                }
             };
             uploadedImageElement.src = e.target.result;
         };
@@ -331,6 +370,11 @@ document.addEventListener("DOMContentLoaded", () => {
         scaleIndicator.textContent = "Scale: Auto";
         
         resetDiagnosisOutput();
+        
+        // Hide warning banner
+        if (imageWarningBanner) {
+            imageWarningBanner.classList.add("hidden");
+        }
     }
 
     function resetDiagnosisOutput() {
@@ -423,6 +467,16 @@ document.addEventListener("DOMContentLoaded", () => {
                 logConsole(stage.msg, stage.type);
             }, stage.t);
         });
+
+        // Sim log warning if scan validation failed
+        if (uploadedImageElement) {
+            const validation = checkIsMedicalScan(uploadedImageElement);
+            if (!validation.isValid) {
+                setTimeout(() => {
+                    logConsole(`WARNING: Non-medical image pattern detected. Diagnostic metrics may be compromised.`, "warn");
+                }, 900);
+            }
+        }
 
         // Final output generation
         setTimeout(() => {
@@ -688,6 +742,19 @@ document.addEventListener("DOMContentLoaded", () => {
             const data = await response.json();
             logConsole("Neural payload successfully received. Parsing model layers.", "success");
             
+            // Check validation warning from backend
+            if (data.is_valid_scan === false) {
+                logConsole(`WARNING: ${data.validation_warning}`, "warn");
+                if (imageWarningBanner && warningBannerText) {
+                    imageWarningBanner.classList.remove("hidden");
+                    warningBannerText.textContent = data.validation_warning;
+                }
+            } else {
+                if (imageWarningBanner) {
+                    imageWarningBanner.classList.add("hidden");
+                }
+            }
+            
             // Format dynamic returns
             const isStone = data.stone_detected;
             const confidence = data.confidence || 0;
@@ -767,6 +834,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
     saveSettingsBtn.addEventListener("save", () => saveConfigSettings());
     saveSettingsBtn.addEventListener("click", () => saveConfigSettings());
+
+    themeToggleBtn.addEventListener("click", () => {
+        const isDark = document.documentElement.classList.contains("dark-theme");
+        setTheme(isDark ? "light" : "dark");
+    });
 
     function saveConfigSettings() {
         localStorage.setItem("ksd_clinical_config", JSON.stringify(config));
@@ -903,6 +975,73 @@ document.addEventListener("DOMContentLoaded", () => {
         `);
         printWindow.document.close();
     });
+
+    function checkIsMedicalScan(imgElement) {
+        try {
+            // Create a small temporary canvas to analyze image pixels quickly
+            const canvas = document.createElement("canvas");
+            const ctx = canvas.getContext("2d");
+            canvas.width = 50;
+            canvas.height = 50;
+            
+            ctx.drawImage(imgElement, 0, 0, 50, 50);
+            const imgData = ctx.getImageData(0, 0, 50, 50);
+            const data = imgData.data;
+            
+            let totalBrightness = 0;
+            let totalSaturation = 0;
+            let colorDifference = 0;
+            const pixelCount = data.length / 4;
+            
+            for (let i = 0; i < data.length; i += 4) {
+                const r = data[i];
+                const g = data[i+1];
+                const b = data[i+2];
+                
+                // 1. Brightness
+                const brightness = (r + g + b) / 3;
+                totalBrightness += brightness;
+                
+                // 2. Color difference (deviation from grayscale)
+                const avg = (r + g + b) / 3;
+                const diff = Math.abs(r - avg) + Math.abs(g - avg) + Math.abs(b - avg);
+                colorDifference += diff / 3;
+                
+                // 3. Simple saturation calculation
+                const maxVal = Math.max(r, g, b);
+                const minVal = Math.min(r, g, b);
+                const saturation = maxVal === 0 ? 0 : (maxVal - minVal) / maxVal;
+                totalSaturation += saturation;
+            }
+            
+            const avgBrightness = totalBrightness / pixelCount;
+            const avgColorDifference = colorDifference / pixelCount;
+            const avgSaturation = totalSaturation / pixelCount;
+            
+            // Conditions for warning:
+            if (avgBrightness > 165) {
+                return {
+                    isValid: false,
+                    reason: "High average brightness detected (e.g. document, screenshot, or white page). Please upload only a valid ultrasound or CT scan image with a dark background."
+                };
+            }
+            if (avgColorDifference > 25 || avgSaturation > 0.22) {
+                return {
+                    isValid: false,
+                    reason: "High color saturation or color variety detected. Please upload only a valid ultrasound or CT scan image (typically grayscale/dark)."
+                };
+            }
+            if (avgBrightness < 2.0) {
+                return {
+                    isValid: false,
+                    reason: "Image appears to be completely blank or black. Please upload a valid scan image."
+                };
+            }
+            return { isValid: true };
+        } catch (e) {
+            return { isValid: true };
+        }
+    }
 
     // Start App!
     initialize();

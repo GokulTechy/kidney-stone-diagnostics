@@ -5,6 +5,7 @@ import base64
 from fastapi import FastAPI, File, UploadFile, Form
 from fastapi.middleware.cors import CORSMiddleware
 from PIL import Image
+import numpy as np
 
 # Ensure app/ path is in sys.path for safe importing
 app_dir = os.path.dirname(os.path.abspath(__file__))
@@ -18,7 +19,7 @@ from ct_yolo_size import detect_ct_stone_size
 
 # Initialize FastAPI application
 app = FastAPI(
-    title="Kidney Stone Diagnostics - Clinical AI API",
+    title="LithoScan AI - Kidney Stone Diagnostics API",
     description="REST API wrapping TensorFlow and YOLO models for kidney stone detection and risk scoring.",
     version="1.2"
 )
@@ -32,12 +33,46 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
+def is_medical_scan(pil_image: Image.Image) -> tuple[bool, str]:
+    """
+    Validates whether the uploaded image is a valid medical scan (ultrasound/CT).
+    """
+    try:
+        # Convert to RGB to ensure 3 channels
+        img_rgb = pil_image.convert("RGB")
+        img_array = np.array(img_rgb)
+        
+        # Calculate mean brightness across all pixels
+        mean_brightness = np.mean(img_array)
+        
+        # Calculate deviation from grayscale (standard deviation of R, G, B channels per pixel)
+        channel_std = np.std(img_array, axis=2)
+        mean_color_diff = np.mean(channel_std)
+        
+        # 1. Page screenshots or documents have very high brightness (white background)
+        if mean_brightness > 165.0:
+            return False, "High average brightness detected (e.g. document, screenshot, or white page). Please upload only a valid ultrasound or CT scan image with a dark background."
+            
+        # 2. General photos (like faces, animals, colorful pictures) have high color diversity
+        if mean_color_diff > 25.0:
+            return False, "High color saturation or color variety detected. Please upload only a valid ultrasound or CT scan image (typically grayscale/dark)."
+            
+        # 3. Completely plain/empty/black image
+        if mean_brightness < 2.0:
+            return False, "Image appears to be completely blank or black. Please upload a valid scan image."
+            
+        return True, ""
+    except Exception as e:
+        return True, ""
+
+
 @app.get("/")
 def read_root():
     """Health check / API Greeting."""
     return {
         "status": "online",
-        "system": "Kidney Stone Diagnostics Clinical AI API",
+        "system": "LithoScan AI Clinical AI API",
         "endpoints": {
             "ultrasound": "/predict-ultrasound [POST]",
             "ct_scan": "/predict-ct [POST]"
@@ -62,6 +97,9 @@ async def predict_ultrasound(
     contents = await image.read()
     pil_image = Image.open(io.BytesIO(contents))
     
+    # Validate image
+    is_valid, warning_msg = is_medical_scan(pil_image)
+    
     # Run ultrasound prediction
     result, confidence = predict_kidney_stone(pil_image)
     stone_detected = (result == "Stone Detected")
@@ -82,7 +120,9 @@ async def predict_ultrasound(
         "result_text": result,
         "confidence": confidence,
         "risk_level": risk,
-        "reasons": reasons
+        "reasons": reasons,
+        "is_valid_scan": is_valid,
+        "validation_warning": warning_msg
     }
 
 @app.post("/predict-ct")
@@ -104,6 +144,9 @@ async def predict_ct(
     # Read uploaded file as PIL Image and convert to RGB
     contents = await image.read()
     pil_image = Image.open(io.BytesIO(contents)).convert("RGB")
+    
+    # Validate image
+    is_valid, warning_msg = is_medical_scan(pil_image)
     
     # Detect stone sizes and draw bounding boxes using existing YOLO script
     output_image, detections = detect_ct_stone_size(pil_image, mm_per_pixel)
@@ -139,5 +182,7 @@ async def predict_ct(
         "detections": detections,
         "risk_level": risk,
         "reasons": reasons,
-        "marked_image_base64": marked_image_base64
+        "marked_image_base64": marked_image_base64,
+        "is_valid_scan": is_valid,
+        "validation_warning": warning_msg
     }
